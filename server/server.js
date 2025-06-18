@@ -25,7 +25,7 @@ app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/vaxwise', {
+mongoose.connect(process.env.MONGO_URI , {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
@@ -35,15 +35,18 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/vaxwise',
 // Import routes
 const authRoutes = require('./routes/auth');
 const farmerRoutes = require('./routes/farmer');
-const vaccinationRoutes = require('./routes/vaccination');
+const animalRoutes = require('./routes/animal');
 const notificationRoutes = require('./routes/notification');
 
 // Route middleware
 app.use('/api/auth', authRoutes);
 app.use('/api/farmer', farmerRoutes);
-app.use('/api/vaccination', vaccinationRoutes);
+app.use('/api/animal', animalRoutes);
 app.use('/api/notification', notificationRoutes);
 
+app.get('/', (req, res) => {
+    res.send('Welcome to the VaxWise API');
+});
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);

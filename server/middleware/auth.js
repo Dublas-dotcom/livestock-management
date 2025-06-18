@@ -1,27 +1,23 @@
 /* 
  * Authentication Middleware for VaxWise application
- * Protects routes and verifies JWT tokens
+ * Handles JWT token verification and user authentication
  */
 
 const jwt = require('jsonwebtoken');
+const { AppError } = require('./error');
 const User = require('../models/User');
 
-// Middleware to protect routes
+// Protect routes
 exports.protect = async (req, res, next) => {
     try {
         let token;
 
-        // Check for token in headers
         if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
             token = req.headers.authorization.split(' ')[1];
         }
 
-        // Verify token exists
         if (!token) {
-            return res.status(401).json({
-                success: false,
-                message: 'Not authorized to access this route'
-            });
+            return next(new AppError('Not authorized to access this route', 401));
         }
 
         try {
@@ -30,20 +26,13 @@ exports.protect = async (req, res, next) => {
 
             // Get user from token
             req.user = await User.findById(decoded.id);
-
             if (!req.user) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'User not found'
-                });
+                return next(new AppError('User not found', 404));
             }
 
             next();
         } catch (err) {
-            return res.status(401).json({
-                success: false,
-                message: 'Not authorized to access this route'
-            });
+            return next(new AppError('Not authorized to access this route', 401));
         }
     } catch (err) {
         next(err);

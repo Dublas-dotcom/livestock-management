@@ -1,6 +1,6 @@
 /* 
  * Error Handling Middleware for VaxWise application
- * Provides consistent error responses across the application
+ * Provides custom error handling and formatting
  */
 
 // Custom error class
