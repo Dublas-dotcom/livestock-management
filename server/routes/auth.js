@@ -1,6 +1,6 @@
 /* 
  * Authentication Routes for VaxWise application
- * Handles user authentication and management
+ * Defines endpoints for user authentication and management
  */
 
 const express = require('express');

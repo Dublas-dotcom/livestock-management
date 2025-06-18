@@ -11,8 +11,8 @@ const crypto = require('crypto');
 
 // Generate JWT token
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET || 'your_jwt_secret', {
-        expiresIn: process.env.JWT_EXPIRE || '30d'
+    return jwt.sign({ id }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRE
     });
 };
 
@@ -80,6 +80,10 @@ exports.login = async (req, res, next) => {
             return next(new AppError('Invalid credentials', 401));
         }
 
+        // Update last login
+        user.lastLogin = Date.now();
+        await user.save();
+
         // Generate token
         const token = generateToken(user._id);
 
@@ -104,9 +108,10 @@ exports.login = async (req, res, next) => {
 exports.getMe = async (req, res, next) => {
     try {
         const user = await User.findById(req.user.id);
+
         res.status(200).json({
             success: true,
-            data: user
+            user
         });
     } catch (err) {
         next(err);
@@ -135,7 +140,7 @@ exports.updateDetails = async (req, res, next) => {
 
         res.status(200).json({
             success: true,
-            data: user
+            user
         });
     } catch (err) {
         next(err);
@@ -181,15 +186,11 @@ exports.forgotPassword = async (req, res, next) => {
         }
 
         // Generate reset token
-        const resetToken = crypto.randomBytes(20).toString('hex');
-        user.resetPasswordToken = crypto
-            .createHash('sha256')
-            .update(resetToken)
-            .digest('hex');
-        user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
-
+        const resetToken = user.getResetPasswordToken();
         await user.save({ validateBeforeSave: false });
 
+        // TODO: Send email with reset token
+        // For now, just return the token
         res.status(200).json({
             success: true,
             message: 'Password reset token generated',
@@ -217,7 +218,7 @@ exports.resetPassword = async (req, res, next) => {
         });
 
         if (!user) {
-            return next(new AppError('Invalid token', 400));
+            return next(new AppError('Invalid or expired token', 400));
         }
 
         // Set new password

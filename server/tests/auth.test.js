@@ -5,7 +5,7 @@
 
 const request = require('supertest');
 const mongoose = require('mongoose');
-const app = require('../server'); // Updated path
+const app = require('../server'); // Main server file
 
 // Mock User model
 jest.mock('../models/User', () => {

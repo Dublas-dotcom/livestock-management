@@ -72,6 +72,7 @@ const userSchema = new mongoose.Schema({
 - CORS protection
 - Helmet security headers
 - Input validation
+- A rate limiter
 
 ## 🛠️ Technology Stack
 
