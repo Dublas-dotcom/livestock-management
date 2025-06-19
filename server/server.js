@@ -14,6 +14,12 @@ const rateLimit = require('express-rate-limit');
 
 // Load environment variables
 dotenv.config();
+//cors
+const corsOptions = {
+    origin: process.env.FRONTEND_URL,
+    credentials: true,
+    optionsSuccessStatus: 200
+}
 
 // Initialize Express app
 const app = express();
@@ -35,35 +41,36 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 app.use(limiter);
 
 // Database connection
-mongoose.connect(process.env.MONGO_URI , {
+mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+    useFindAndModify: false
 })
-.then(() => console.log('Connected to MongoDB'))
+.then(() => console.log('MongoDB connected'))
 .catch(err => console.error('MongoDB connection error:', err));
 
 // Import routes
-const authRoutes = require('./routes/auth');
-const farmerRoutes = require('./routes/farmer');
-const animalRoutes = require('./routes/animal');
-const notificationRoutes = require('./routes/notification');
+const authRoutes = require('./routes/authRoutes');
+const animalRoutes = require('./routes/animalRoutes');
+const vaccinationRoutes = require('./routes/vaccinationRoutes');
+const healthRecordRoutes = require('./routes/healthRecordRoutes');
 
 // Route middleware
 app.use('/api/auth', authRoutes);
-app.use('/api/farmer', farmerRoutes);
-app.use('/api/animal', animalRoutes);
-app.use('/api/notification', notificationRoutes);
+app.use('/api/animals', animalRoutes);
+app.use('/api/vaccinations', vaccinationRoutes);
+app.use('/api/health-records', healthRecordRoutes);
 
 app.get('/', (req, res) => {
     res.send('Welcome to the VaxWise API');
 });
 // Error handling middleware
 app.use((err, req, res, next) => {
-    const status = err.statusCode || 500;
-    res.status(status).json({
-        success: false,
-        message: err.message || 'Internal Server Error',
-        error: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    console.error(err.stack);
+    res.status(500).json({
+        message: 'Something went wrong!',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
 });
 

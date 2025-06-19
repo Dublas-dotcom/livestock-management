@@ -7,30 +7,34 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+/**
+ * User Schema
+ * Defines the structure and validation rules for user documents
+ */
 const userSchema = new mongoose.Schema({
     // Basic user information
-    name: {
+    username: {
         type: String,
-        required: [true, 'Please provide a name'],
-        trim: true
+        required: true,
+        trim: true,
+        minlength: 3
     },
     email: {
         type: String,
-        required: [true, 'Please provide an email'],
+        required: true,
         unique: true,
-        lowercase: true,
-        match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email']
+        trim: true,
+        lowercase: true
     },
     password: {
         type: String,
-        required: [true, 'Please provide a password'],
-        minlength: 6,
-        select: false
+        required: true,
+        minlength: 6
     },
     role: {
         type: String,
-        enum: ['farmer', 'veterinarian', 'admin'],
-        default: 'farmer'
+        enum: ['user', 'admin', 'veterinarian'],
+        default: 'user'
     },
     
     // Contact information
@@ -74,6 +78,10 @@ const userSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+// Create indexes for better query performance
+userSchema.index({ email: 1 });
+userSchema.index({ role: 1 });
 
 // Hash password before saving
 // why use pre?
